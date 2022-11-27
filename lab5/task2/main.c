@@ -4,7 +4,6 @@
 // #include <dirent.h>
 // #include <sys/stat.h>
  */
-extern system_call();
 
 #define O_DIRECTORY	00200000
 #define O_RDONLY	     00
@@ -19,68 +18,60 @@ extern system_call();
 #define STDOUT 1
 #define SYS_OPEN 5
 #define SYS_CLOSE 6
-#define O_RDWR 2
-#define SYS_SEEK 19
-#define SEEK_SET 0
-#define SHIRA_OFFSET 0x291
-#define BUF_SIZE 1024
-
-#include <stdlib.h> /* FIXME : remove */
-#include <stdio.h> /* FIXME : remove */
+#define SYS_getdents 141
+#define NULL 0
+/* // #define O_RDWR 2
+// #define SYS_SEEK 19
+// #define SEEK_SET 0
+// #define SHIRA_OFFSET 0x291
+// #define BUF_SIZE 1024 */
 
 typedef struct ent
 {
   int inode;
   int offset;
-  short len;
-  char buf[1];
-}ent;
+
+  short structSize;
+  char fileName[256];
+} ent;
 
 extern int system_call();
 
 int main (int argc , char* argv[], char* envp[])
 {   
-	int fd;
-	long nread;
-	char buf[2000];
-	ent *entp = buf;
-	struct linux_dirent *d;
-	char d_type;
-	fd = system_call(SYS_OPEN,".",O_RDONLY,0);
+	#define BUF_SIZE 2000
+	int folderDescriptor = 0;
+	long bytesRead = 0;
+	char bytesArray[BUF_SIZE];
+	ent *fileInfo = (ent*)bytesArray;
+	char *bytesIterator = bytesArray;
+	/* // struct linux_dirent *d;
+	// char d_type; */
 
+	folderDescriptor = system_call(SYS_OPEN, ".", O_RDONLY/* | O_DIRECTORY */, 0);
+	if(folderDescriptor < 0) {
+		system_call(SYS_WRITE, STDOUT, "error\n", 6);
+	}
 
-	if(fd<0)
-		system_call(SYS_WRITE,STDOUT,"e\n",2);
-	/* // for (;;) { */
+	bytesRead = system_call(SYS_getdents , folderDescriptor, bytesArray, BUF_SIZE);
 
-	nread = system_call(141, fd, entp->buf, 100);
+	/* system_call(SYS_WRITE, STDOUT, itoa(bytesRead), 12 );
+	system_call(SYS_WRITE, STDOUT, " bytes were read", 16 );
+	system_call(SYS_WRITE,STDOUT,"\n",1); */
 
-	entp = buf + 28;
-/* // printf("Inode is %d, offset is %d, size is %d, name is %s\n",
-	// 	entp->inode,
-	// 	entp->offset,
-	// 	entp->len,a
-	// 	entp->buf
-	// 	); */
+	char *bytesArrayEnd = bytesArray + bytesRead;
+	for (bytesIterator = bytesArray; bytesIterator < bytesArrayEnd; bytesIterator += fileInfo->structSize) {
+		fileInfo = (ent*)bytesIterator;
 
-	/*  //if (nread == -1) */
-	/*   // break;
-	// if (nread == 0)
+		if (strncmp(fileInfo->fileName, ".", 2) == 0 ||
+			strncmp(fileInfo->fileName, "..", 3) == 0) {
+			continue;
+		}
+		
+		system_call(SYS_WRITE, STDOUT, fileInfo->fileName, strlen(fileInfo->fileName) );
+		system_call(SYS_WRITE,STDOUT, "\n", 1);
+	}
 
-	// break;
-	//else{ */
-
-	system_call(SYS_WRITE, STDOUT, entp->buf, strlen(entp->buf) );
-	system_call(SYS_WRITE,STDOUT,"\n",1);
-
-	entp = buf + entp->len;
-
-	system_call(SYS_WRITE, STDOUT, entp->buf, strlen(entp->buf) );
-	system_call(SYS_WRITE,STDOUT,"\n",1);
-
-	/*   // }
-	//} */
-
-	system_call(SYS_CLOSE, fd);
+	system_call(SYS_CLOSE, folderDescriptor);
 	return 0;
 }
