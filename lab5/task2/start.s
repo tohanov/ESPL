@@ -1,4 +1,4 @@
-code_start:
+
 
 ; section .text
 
@@ -56,7 +56,7 @@ system_call:
     pop     ebp             ; Restore caller state
     ret                     ; Back to caller
 
-
+code_start:
 	msg: db "Hello, Infected File", 0x0a
 	len equ $ - msg ; length of string
 
