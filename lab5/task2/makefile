@@ -12,7 +12,20 @@ util.o: util.c
 start.o: start.s
 	nasm -f elf start.s -o start.o
 
-.PHONY: clean
+####################################################################
 
-clean: 
-	rm -f *.o task2
+clean: clean_o clean_exec
+
+clean_o: 
+	rm -f *.o
+
+clean_exec: 
+	rm -f task2
+
+####################################################################
+
+r: clean task2 clean_o
+	# clear
+	# ./task2
+	clear
+	./task2 -aabc
