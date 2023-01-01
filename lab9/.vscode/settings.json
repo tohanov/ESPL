@@ -1,0 +1,8 @@
+{
+	"files.associations": {
+		"*.s": "asm-intel-x86-generic",
+		"cstdarg": "c",
+		"*.tcc": "c",
+		"elf.h": "c"
+	}
+}

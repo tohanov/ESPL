@@ -1,7 +1,7 @@
-executable: task0
+executable: task1
 
-task0: task0.c
-	gcc -Wall -m32 -g -o task0 task0.c
+task1: task1.c
+	gcc -Wall -m32 -g -o task1 task1.c
 
-r:	task0
-	./task0
+r:	task1
+	./task1
